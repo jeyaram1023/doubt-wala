@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doubt Portal - Profile</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/profile.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <h2>🎓 Doubt Portal</h2>
+            </div>
+            <div class="nav-menu">
+                <a href="home.html" class="nav-link">Home</a>
+                <a href="profile.html" class="nav-link active">Profile</a>
+                <button id="logoutBtn" class="btn btn-secondary">Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="main-container">
+        <div class="content-wrapper">
+            <div class="profile-header">
+                <div class="profile-info">
+                    <div class="avatar">
+                        <span id="userAvatar">👤</span>
+                    </div>
+                    <div class="user-details">
+                        <h1 id="userName">Loading...</h1>
+                        <p id="userEmail">Loading...</p>
+                        <p class="join-date">Member since <span id="joinDate">Loading...</span></p>
+                    </div>
+                </div>
+                
+                <div class="profile-stats">
+                    <div class="stat-card">
+                        <span class="stat-number" id="questionsCount">0</span>
+                        <span class="stat-label">Questions</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number" id="answersCount">0</span>
+                        <span class="stat-label">Answers</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="profile-content">
+                <div class="tabs">
+                    <button class="tab-button active" data-tab="questions">My Questions</button>
+                    <button class="tab-button" data-tab="answers">My Answers</button>
+                </div>
+
+                <div id="questionsTab" class="tab-content active">
+                    <div class="section-header">
+                        <h3>Questions You've Asked</h3>
+                    </div>
+                    <div id="userQuestionsContainer" class="content-grid">
+                        <div class="loading-state">
+                            <div class="spinner"></div>
+                            <p>Loading your questions...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="answersTab" class="tab-content hidden">
+                    <div class="section-header">
+                        <h3>Answers You've Provided</h3>
+                    </div>
+                    <div id="userAnswersContainer" class="content-grid">
+                        <div class="loading-state">
+                            <div class="spinner"></div>
+                            <p>Loading your answers...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="notification" class="notification hidden">
+        <div class="notification-content">
+            <span id="notificationText"></span>
+            <button class="notification-close">&times;</button>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/@supabase/supabase-js@2.39.3/dist/umd/supabase.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/profile.js"></script>
+</body>
+</html>
