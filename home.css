@@ -1,0 +1,213 @@
+/* Home Page Styles */
+.header-section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-8);
+  padding-bottom: var(--spacing-6);
+  border-bottom: 1px solid var(--gray-200);
+}
+
+.welcome-message h1 {
+  margin-bottom: var(--spacing-2);
+  color: var(--gray-900);
+}
+
+.welcome-message p {
+  margin: 0;
+  color: var(--gray-600);
+  font-size: 1.125rem;
+}
+
+.search-filter-section {
+  background-color: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-xl);
+  padding: var(--spacing-6);
+  margin-bottom: var(--spacing-8);
+}
+
+.search-bar {
+  display: flex;
+  gap: var(--spacing-3);
+  margin-bottom: var(--spacing-4);
+}
+
+.search-bar input {
+  flex: 1;
+  margin: 0;
+}
+
+.filter-options {
+  display: flex;
+  gap: var(--spacing-4);
+}
+
+.filter-options select,
+.filter-options input {
+  margin: 0;
+}
+
+.questions-section {
+  margin-bottom: var(--spacing-8);
+}
+
+.questions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: var(--spacing-6);
+}
+
+.question-card {
+  background-color: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-xl);
+  padding: var(--spacing-6);
+  transition: all var(--transition-normal);
+  cursor: pointer;
+  height: fit-content;
+}
+
+.question-card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+  border-color: var(--primary-200);
+}
+
+.question-header {
+  margin-bottom: var(--spacing-4);
+}
+
+.question-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--gray-900);
+  margin-bottom: var(--spacing-2);
+  line-height: var(--leading-tight);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.question-description {
+  color: var(--gray-600);
+  font-size: 0.875rem;
+  line-height: var(--leading-normal);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin-bottom: var(--spacing-3);
+}
+
+.question-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-2);
+  margin-bottom: var(--spacing-4);
+}
+
+.tag {
+  display: inline-block;
+  padding: var(--spacing-1) var(--spacing-3);
+  background-color: var(--primary-50);
+  color: var(--primary-700);
+  border: 1px solid var(--primary-200);
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.question-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: var(--spacing-3);
+  border-top: 1px solid var(--gray-100);
+  font-size: 0.75rem;
+  color: var(--gray-500);
+}
+
+.question-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-4);
+}
+
+.meta-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-1);
+}
+
+.question-time {
+  color: var(--gray-400);
+}
+
+.no-questions {
+  text-align: center;
+  padding: var(--spacing-12);
+  color: var(--gray-500);
+}
+
+.no-questions h3 {
+  margin-bottom: var(--spacing-2);
+  color: var(--gray-600);
+}
+
+/* Modal specific styles */
+.modal-content form {
+  padding: var(--spacing-6);
+}
+
+.modal-content .input-group:last-of-type {
+  margin-bottom: 0;
+}
+
+/* Responsive design for home */
+@media (max-width: 768px) {
+  .header-section {
+    flex-direction: column;
+    gap: var(--spacing-4);
+    text-align: center;
+  }
+
+  .search-bar {
+    flex-direction: column;
+  }
+
+  .filter-options {
+    flex-direction: column;
+  }
+
+  .questions-grid {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-4);
+  }
+
+  .question-meta {
+    flex-direction: column;
+    gap: var(--spacing-2);
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 480px) {
+  .search-filter-section {
+    padding: var(--spacing-4);
+  }
+
+  .question-card {
+    padding: var(--spacing-4);
+  }
+
+  .question-tags {
+    gap: var(--spacing-1);
+  }
+
+  .tag {
+    padding: var(--spacing-1) var(--spacing-2);
+    font-size: 0.6875rem;
+  }
+}
