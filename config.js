@@ -1,13 +1,14 @@
 // Supabase Configuration
-// Note: Replace with your actual Supabase URL and anon key
-// You can get these from your Supabase project settings
+import { createClient } from '@supabase/supabase-js';
+
+// Supabase Configuration
 const SUPABASE_URL = import.meta?.env?.VITE_SUPABASE_URL || 'https://cubnpddinqtubsptdipi.supabase.co';
 const SUPABASE_ANON_KEY = import.meta?.env?.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN1Ym5wZGRpbnF0dWJzcHRkaXBpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU4NDA2MDMsImV4cCI6MjA3MTQxNjYwM30.Gy4XS-Br-DO8nl4Wq_qHhp2A9gd38raRvTokuqdfKqo';
 
 // Initialize Supabase client
-const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// Export for use in other modules
+// Export globally if needed
 window.supabase = supabase;
 
 // Configuration constants
