@@ -1,0 +1,330 @@
+/* Profile Page Styles */
+.profile-header {
+  background-color: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-xl);
+  padding: var(--spacing-8);
+  margin-bottom: var(--spacing-8);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-8);
+}
+
+.profile-info {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-6);
+}
+
+.avatar {
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg, var(--primary-500) 0%, var(--primary-600) 100%);
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  color: var(--white);
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.user-details h1 {
+  font-size: 1.75rem;
+  margin-bottom: var(--spacing-2);
+  color: var(--gray-900);
+}
+
+.user-details p {
+  margin-bottom: var(--spacing-1);
+  color: var(--gray-600);
+}
+
+.join-date {
+  font-size: 0.875rem;
+  color: var(--gray-500);
+}
+
+.profile-stats {
+  display: flex;
+  gap: var(--spacing-4);
+}
+
+.stat-card {
+  text-align: center;
+  padding: var(--spacing-4);
+  background-color: var(--gray-50);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-lg);
+  min-width: 100px;
+}
+
+.stat-number {
+  display: block;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--primary-600);
+  margin-bottom: var(--spacing-1);
+}
+
+.stat-label {
+  font-size: 0.875rem;
+  color: var(--gray-600);
+  font-weight: 500;
+}
+
+.profile-content {
+  background-color: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+}
+
+.tabs {
+  display: flex;
+  border-bottom: 1px solid var(--gray-200);
+}
+
+.tab-button {
+  flex: 1;
+  padding: var(--spacing-4) var(--spacing-6);
+  background: none;
+  border: none;
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--gray-600);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  border-bottom: 3px solid transparent;
+}
+
+.tab-button:hover {
+  background-color: var(--gray-50);
+  color: var(--gray-800);
+}
+
+.tab-button.active {
+  color: var(--primary-600);
+  border-bottom-color: var(--primary-600);
+  background-color: var(--primary-50);
+}
+
+.tab-content {
+  padding: var(--spacing-8);
+}
+
+.section-header {
+  margin-bottom: var(--spacing-6);
+}
+
+.section-header h3 {
+  margin: 0;
+  color: var(--gray-900);
+}
+
+.content-grid {
+  display: grid;
+  gap: var(--spacing-6);
+}
+
+.profile-question-card,
+.profile-answer-card {
+  background-color: var(--gray-50);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-5);
+  transition: all var(--transition-normal);
+}
+
+.profile-question-card:hover,
+.profile-answer-card:hover {
+  background-color: var(--white);
+  box-shadow: var(--shadow-sm);
+}
+
+.profile-question-card {
+  cursor: pointer;
+}
+
+.profile-question-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--gray-900);
+  margin-bottom: var(--spacing-2);
+  line-height: var(--leading-tight);
+}
+
+.profile-question-description {
+  color: var(--gray-600);
+  font-size: 0.875rem;
+  line-height: var(--leading-normal);
+  margin-bottom: var(--spacing-3);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.profile-question-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-1);
+  margin-bottom: var(--spacing-3);
+}
+
+.profile-question-tags .tag {
+  font-size: 0.75rem;
+  padding: var(--spacing-1) var(--spacing-2);
+}
+
+.profile-question-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: var(--gray-500);
+}
+
+.profile-answer-card {
+  border-left: 4px solid var(--primary-200);
+}
+
+.profile-answer-question {
+  font-size: 0.875rem;
+  color: var(--gray-600);
+  margin-bottom: var(--spacing-2);
+  font-weight: 500;
+}
+
+.profile-answer-question a {
+  color: var(--primary-600);
+  text-decoration: none;
+}
+
+.profile-answer-question a:hover {
+  text-decoration: underline;
+}
+
+.profile-answer-content {
+  color: var(--gray-800);
+  font-size: 0.875rem;
+  line-height: var(--leading-relaxed);
+  margin-bottom: var(--spacing-3);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.profile-answer-footer {
+  display: flex;
+  align-items: center;
+  justify-content: between;
+  gap: var(--spacing-4);
+  font-size: 0.75rem;
+  color: var(--gray-500);
+}
+
+.profile-answer-votes {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-1);
+  font-weight: 500;
+}
+
+.profile-answer-votes.positive {
+  color: var(--success-600);
+}
+
+.profile-answer-votes.negative {
+  color: var(--error-600);
+}
+
+.empty-state {
+  text-align: center;
+  padding: var(--spacing-12);
+  color: var(--gray-500);
+}
+
+.empty-state h4 {
+  margin-bottom: var(--spacing-2);
+  color: var(--gray-600);
+}
+
+.empty-state p {
+  margin: 0;
+}
+
+/* Responsive design for profile */
+@media (max-width: 768px) {
+  .profile-header {
+    flex-direction: column;
+    text-align: center;
+    gap: var(--spacing-6);
+  }
+
+  .profile-info {
+    flex-direction: column;
+    text-align: center;
+    gap: var(--spacing-4);
+  }
+
+  .profile-stats {
+    justify-content: center;
+  }
+
+  .tabs {
+    flex-direction: column;
+  }
+
+  .tab-button {
+    border-bottom: none;
+    border-right: 3px solid transparent;
+  }
+
+  .tab-button.active {
+    border-bottom: none;
+    border-right-color: var(--primary-600);
+  }
+
+  .tab-content {
+    padding: var(--spacing-6);
+  }
+}
+
+@media (max-width: 480px) {
+  .profile-header {
+    padding: var(--spacing-6);
+  }
+
+  .avatar {
+    width: 60px;
+    height: 60px;
+    font-size: 1.5rem;
+  }
+
+  .user-details h1 {
+    font-size: 1.5rem;
+  }
+
+  .profile-stats {
+    flex-direction: column;
+    gap: var(--spacing-3);
+  }
+
+  .stat-card {
+    min-width: auto;
+    padding: var(--spacing-3);
+  }
+
+  .tab-content {
+    padding: var(--spacing-4);
+  }
+
+  .profile-question-card,
+  .profile-answer-card {
+    padding: var(--spacing-4);
+  }
+}
