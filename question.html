@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doubt Portal - Question</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/question.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <h2>🎓 Doubt Portal</h2>
+            </div>
+            <div class="nav-menu">
+                <a href="home.html" class="nav-link">Home</a>
+                <a href="profile.html" class="nav-link">Profile</a>
+                <button id="logoutBtn" class="btn btn-secondary">Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="main-container">
+        <div class="content-wrapper">
+            <div class="question-section">
+                <div id="questionContainer" class="question-card">
+                    <div class="loading-state">
+                        <div class="spinner"></div>
+                        <p>Loading question...</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="answer-form-section">
+                <div class="answer-form-card">
+                    <h3>Your Answer</h3>
+                    <form id="answerForm">
+                        <div class="input-group">
+                            <textarea id="answerContent" rows="4" required placeholder="Share your knowledge and help others learn..."></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Post Answer</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="answers-section">
+                <div class="answers-header">
+                    <h3 id="answersTitle">Answers</h3>
+                    <div class="sort-options">
+                        <select id="answerSort">
+                            <option value="votes">Most Voted</option>
+                            <option value="newest">Newest First</option>
+                            <option value="oldest">Oldest First</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div id="answersContainer" class="answers-list">
+                    <div class="no-answers">
+                        <p>No answers yet. Be the first to help!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Question Modal -->
+    <div id="editQuestionModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Edit Question</h3>
+                <button class="modal-close" aria-label="Close modal">&times;</button>
+            </div>
+            <form id="editQuestionForm">
+                <div class="input-group">
+                    <label for="editQuestionTitle">Title *</label>
+                    <input type="text" id="editQuestionTitle" required>
+                </div>
+                
+                <div class="input-group">
+                    <label for="editQuestionDescription">Description</label>
+                    <textarea id="editQuestionDescription" rows="4"></textarea>
+                </div>
+                
+                <div class="input-group">
+                    <label for="editQuestionTags">Tags</label>
+                    <input type="text" id="editQuestionTags">
+                </div>
+                
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeEditQuestionModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Answer Modal -->
+    <div id="editAnswerModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Edit Answer</h3>
+                <button class="modal-close" aria-label="Close modal">&times;</button>
+            </div>
+            <form id="editAnswerForm">
+                <div class="input-group">
+                    <textarea id="editAnswerContent" rows="4" required></textarea>
+                </div>
+                
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeEditAnswerModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="notification" class="notification hidden">
+        <div class="notification-content">
+            <span id="notificationText"></span>
+            <button class="notification-close">&times;</button>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/@supabase/supabase-js@2.39.3/dist/umd/supabase.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/realtime.js"></script>
+    <script src="js/question.js"></script>
+</body>
+</html>
