@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doubt Portal - Home</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/home.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <h2>🎓 Doubt Portal</h2>
+            </div>
+            <div class="nav-menu">
+                <a href="home.html" class="nav-link active">Home</a>
+                <a href="profile.html" class="nav-link">Profile</a>
+                <button id="logoutBtn" class="btn btn-secondary">Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="main-container">
+        <div class="content-wrapper">
+            <div class="header-section">
+                <div class="welcome-message">
+                    <h1>Welcome back! 👋</h1>
+                    <p>Ask questions, share knowledge, and learn together</p>
+                </div>
+                <button id="askQuestionBtn" class="btn btn-primary">
+                    <span>+ Ask Question</span>
+                </button>
+            </div>
+
+            <div class="search-filter-section">
+                <div class="search-bar">
+                    <input type="text" id="searchInput" placeholder="Search questions by title, description, or tags...">
+                    <button id="searchBtn" class="btn btn-outline">Search</button>
+                </div>
+                
+                <div class="filter-options">
+                    <select id="sortFilter">
+                        <option value="newest">Newest First</option>
+                        <option value="oldest">Oldest First</option>
+                    </select>
+                    <input type="text" id="tagFilter" placeholder="Filter by tags (comma-separated)">
+                </div>
+            </div>
+
+            <div class="questions-section">
+                <div id="questionsContainer" class="questions-grid">
+                    <div class="loading-state">
+                        <div class="spinner"></div>
+                        <p>Loading questions...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ask Question Modal -->
+    <div id="questionModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Ask a Question</h3>
+                <button class="modal-close" aria-label="Close modal">&times;</button>
+            </div>
+            <form id="questionForm">
+                <div class="input-group">
+                    <label for="questionTitle">Title *</label>
+                    <input type="text" id="questionTitle" required placeholder="What's your question?">
+                </div>
+                
+                <div class="input-group">
+                    <label for="questionDescription">Description</label>
+                    <textarea id="questionDescription" rows="4" placeholder="Provide more details about your question..."></textarea>
+                </div>
+                
+                <div class="input-group">
+                    <label for="questionTags">Tags</label>
+                    <input type="text" id="questionTags" placeholder="javascript, react, css (comma-separated)">
+                    <small>Add relevant tags to help others find your question</small>
+                </div>
+                
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeQuestionModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Post Question</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="notification" class="notification hidden">
+        <div class="notification-content">
+            <span id="notificationText"></span>
+            <button class="notification-close">&times;</button>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/@supabase/supabase-js@2.39.3/dist/umd/supabase.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/realtime.js"></script>
+    <script src="js/home.js"></script>
+</body>
+</html>
