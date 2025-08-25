@@ -11,7 +11,7 @@ class AuthManager {
     
     if (user) {
       // User is already logged in, redirect to home
-      window.location.href = 'home.html';
+      window.location.href = '/doubt-wala/home.html';
       return;
     }
 
@@ -28,7 +28,7 @@ class AuthManager {
         
         // Redirect to home page
         setTimeout(() => {
-          window.location.href = 'home.html';
+          window.location.href = '/doubt-wala/home.html';
         }, 1500);
       }
       
@@ -61,7 +61,6 @@ class AuthManager {
     
     const email = document.getElementById('email').value.trim();
     const authButton = document.getElementById('authButton');
-    const messageDiv = document.getElementById('message');
 
     if (!this.validateEmail(email)) {
       this.showMessage('Please enter a valid email address.', 'error');
@@ -76,7 +75,8 @@ class AuthManager {
       const { error } = await supabase.auth.signInWithOtp({
         email: email,
         options: {
-          emailRedirectTo: window.location.origin + '/home.html'
+          // Corrected for GitHub Pages deployment
+          emailRedirectTo: window.location.origin + '/doubt-wala/home.html'
         }
       });
 
