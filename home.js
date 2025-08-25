@@ -1,6 +1,4 @@
-
-
-// Home page functionality
+// home.js
 
 class HomePage {
   constructor() {
@@ -12,44 +10,68 @@ class HomePage {
   }
 
   async init() {
-    // Initialize UI components
     utils.initializeUI();
 
-    // Check authentication
-    this.currentUser = await utils.checkAuth();
-    if (!this.currentUser) return;
+    // ✅ Check authentication
+    const { data: { user }, error } = await supabase.auth.getUser();
+    if (error || !user) {
+      utils.showNotification("Please log in first.", "error");
+      return;
+    }
+    this.currentUser = user;
 
-    // Setup event listeners
+    // ✅ Ensure user exists in user_profiles
+    await this.ensureUserProfile(user);
+
+    // Setup events
     this.setupEventListeners();
 
-    // Load initial data
+    // Load questions
     await this.loadQuestions();
 
-    // Setup realtime subscriptions
+    // Setup realtime
     this.setupRealtime();
   }
 
+  async ensureUserProfile(user) {
+    try {
+      const { data, error } = await supabase
+        .from("user_profiles")
+        .select("id")
+        .eq("id", user.id)
+        .single();
+
+      if (!data) {
+        await supabase.from("user_profiles").insert({
+          id: user.id,
+          display_name: user.email.split("@")[0],
+          email: user.email,
+        });
+        console.log("User profile created");
+      }
+    } catch (err) {
+      console.error("Error ensuring profile:", err.message);
+    }
+  }
+
   setupEventListeners() {
-    // Ask question button
-    const askQuestionBtn = document.getElementById('askQuestionBtn');
+    const askQuestionBtn = document.getElementById("askQuestionBtn");
     if (askQuestionBtn) {
-      askQuestionBtn.addEventListener('click', () => this.openQuestionModal());
+      askQuestionBtn.addEventListener("click", () => this.openQuestionModal());
     }
 
-    // Question form
-    const questionForm = document.getElementById('questionForm');
+    const questionForm = document.getElementById("questionForm");
     if (questionForm) {
-      questionForm.addEventListener('submit', (e) => this.handleQuestionSubmit(e));
+      questionForm.addEventListener("submit", (e) => this.handleQuestionSubmit(e));
     }
 
-    // Search functionality
-    const searchInput = document.getElementById('searchInput');
-    const searchBtn = document.getElementById('searchBtn');
-    
+    const searchInput = document.getElementById("searchInput");
+    const searchBtn = document.getElementById("searchBtn");
+
     if (searchInput) {
-      searchInput.addEventListener('input', () => this.searchDebounced());
-      searchInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
+      searchInput.addEventListener("input", () => this.searchDebounced());
+      searchInput.addEventListener("keypress", (e) => {
+        if (e.key === "Enter") {
           e.preventDefault();
           this.performSearch();
         }
@@ -57,278 +79,164 @@ class HomePage {
     }
 
     if (searchBtn) {
-      searchBtn.addEventListener('click', () => this.performSearch());
-    }
-
-    // Filter functionality
-    const sortFilter = document.getElementById('sortFilter');
-    const tagFilter = document.getElementById('tagFilter');
-
-    if (sortFilter) {
-      sortFilter.addEventListener('change', () => this.applyFilters());
-    }
-
-    if (tagFilter) {
-      tagFilter.addEventListener('input', () => this.searchDebounced());
-      tagFilter.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-          e.preventDefault();
-          this.applyFilters();
-        }
-      });
+      searchBtn.addEventListener("click", () => this.performSearch());
     }
   }
 
   setupRealtime() {
-    // Subscribe to new questions
     realtimeManager.subscribeToQuestions({
-      onInsert: (question) => {
-        this.handleNewQuestion(question);
-      },
-      onUpdate: (updatedQuestion, oldQuestion) => {
-        this.handleQuestionUpdate(updatedQuestion, oldQuestion);
-      },
-      onDelete: (deletedQuestion) => {
-        this.handleQuestionDelete(deletedQuestion);
-      },
-      onConnected: () => {
-        console.log('Connected to questions realtime');
-      }
+      onInsert: (q) => this.handleNewQuestion(q),
+      onUpdate: (u, o) => this.handleQuestionUpdate(u, o),
+      onDelete: (d) => this.handleQuestionDelete(d),
     });
   }
 
   async loadQuestions() {
-    const container = document.getElementById('questionsContainer');
-    utils.showLoading(container, 'Loading questions...');
+    const container = document.getElementById("questionsContainer");
+    utils.showLoading(container, "Loading questions...");
 
     try {
       const { data, error } = await supabase
-        .from('questions')
+        .from("questions")
         .select(`
           *,
-          user_profiles!questions_user_id_fkey (
+          user_profiles (
             display_name,
             email
           )
         `)
-        .order('created_at', { ascending: false });
+        .order("created_at", { ascending: false });
 
       if (error) throw error;
 
       this.questions = data || [];
       this.filteredQuestions = [...this.questions];
       this.renderQuestions();
-
-    } catch (error) {
-      utils.handleError(error, 'Failed to load questions');
+    } catch (err) {
+      utils.handleError(err, "Failed to load questions");
       utils.showEmptyState(
         container,
-        'Failed to Load Questions',
-        'There was an error loading the questions. Please try again.',
+        "Failed to Load Questions",
+        "There was an error loading the questions. Please try again.",
         {
-          text: 'Retry',
-          action: 'window.location.reload()'
+          text: "Retry",
+          action: "window.location.reload()",
         }
       );
     }
   }
 
   renderQuestions() {
-    const container = document.getElementById('questionsContainer');
-    
+    const container = document.getElementById("questionsContainer");
+
     if (!this.filteredQuestions.length) {
       utils.showEmptyState(
         container,
-        'No Questions Found',
-        this.hasActiveFilters() 
-          ? 'Try adjusting your search or filters to find more questions.'
-          : 'Be the first to ask a question and start the discussion!',
-        !this.hasActiveFilters() ? {
-          text: 'Ask Question',
-          action: 'document.querySelector(\'#askQuestionBtn\').click()'
-        } : null
+        "No Questions Found",
+        "Be the first to ask a question!",
+        {
+          text: "Ask Question",
+          action: "document.querySelector('#askQuestionBtn').click()",
+        }
       );
       return;
     }
 
     container.innerHTML = this.filteredQuestions
-      .map(question => this.renderQuestionCard(question))
-      .join('');
+      .map((q) => this.renderQuestionCard(q))
+      .join("");
   }
 
   renderQuestionCard(question) {
     const author = question.user_profiles || {};
-    const displayName = author.display_name || author.email?.split('@')[0] || 'Anonymous';
+    const displayName = author.display_name || author.email?.split("@")[0] || "Anonymous";
     const tags = utils.formatTags(question.tags);
     const timeAgo = utils.formatRelativeTime(question.created_at);
 
     return `
       <div class="question-card" onclick="window.location.href='question.html?id=${question.id}'">
         <div class="question-header">
-          <h3 class="question-title">${utils.escapeHtml(question.title)}</h3>
-          ${question.description ? `
-            <p class="question-description">${utils.escapeHtml(question.description)}</p>
-          ` : ''}
+          <h3>${utils.escapeHtml(question.title)}</h3>
+          ${question.description ? <p>${utils.escapeHtml(question.description)}</p> : ""}
         </div>
-        
-        ${tags.length > 0 ? `
-          <div class="question-tags">
-            ${tags.map(tag => `<span class="tag">${utils.escapeHtml(tag)}</span>`).join('')}
-          </div>
-        ` : ''}
-        
+        ${tags.length ? `<div class="question-tags">${tags.map(t => <span class="tag">${t}</span>).join("")}</div>` : ""}
         <div class="question-footer">
-          <div class="question-meta">
-            <div class="meta-item">
-              <span>👤 ${utils.escapeHtml(displayName)}</span>
-            </div>
-            <div class="meta-item">
-              <span>💬 0 answers</span>
-            </div>
-          </div>
-          <div class="question-time">${timeAgo}</div>
+          <span>👤 ${displayName}</span>
+          <span>🕒 ${timeAgo}</span>
         </div>
       </div>
     `;
   }
 
-  performSearch() {
-    const searchTerm = document.getElementById('searchInput').value.trim().toLowerCase();
-    const tagFilter = document.getElementById('tagFilter').value.trim().toLowerCase();
-    const tagFilters = tagFilter ? utils.parseTags(tagFilter) : [];
-
-    this.filteredQuestions = this.questions.filter(question => {
-      // Text search
-      const matchesSearch = !searchTerm || 
-        question.title.toLowerCase().includes(searchTerm) ||
-        question.description?.toLowerCase().includes(searchTerm);
-
-      // Tag filter
-      const matchesTags = tagFilters.length === 0 ||
-        tagFilters.some(filterTag => 
-          question.tags?.some(questionTag => 
-            questionTag.toLowerCase().includes(filterTag)
-          )
-        );
-
-      return matchesSearch && matchesTags;
-    });
-
-    this.applyFilters();
-  }
-
-  applyFilters() {
-    const sortFilter = document.getElementById('sortFilter').value;
-
-    // Sort filtered questions
-    this.filteredQuestions.sort((a, b) => {
-      switch (sortFilter) {
-        case 'oldest':
-          return new Date(a.created_at) - new Date(b.created_at);
-        case 'newest':
-        default:
-          return new Date(b.created_at) - new Date(a.created_at);
-      }
-    });
-
-    this.renderQuestions();
-  }
-
-  hasActiveFilters() {
-    const searchTerm = document.getElementById('searchInput').value.trim();
-    const tagFilter = document.getElementById('tagFilter').value.trim();
-    return searchTerm || tagFilter;
-  }
-
-  openQuestionModal() {
-    const modal = document.getElementById('questionModal');
-    modal.classList.remove('hidden');
-    
-    // Focus on title input
-    const titleInput = document.getElementById('questionTitle');
-    if (titleInput) {
-      setTimeout(() => titleInput.focus(), 100);
-    }
-  }
-
   async handleQuestionSubmit(e) {
     e.preventDefault();
-    
-    const title = document.getElementById('questionTitle').value.trim();
-    const description = document.getElementById('questionDescription').value.trim();
-    const tagsInput = document.getElementById('questionTags').value.trim();
-    
+
+    const title = document.getElementById("questionTitle").value.trim();
+    const description = document.getElementById("questionDescription").value.trim();
+    const tagsInput = document.getElementById("questionTags").value.trim();
+
     if (!title) {
-      utils.showNotification('Please enter a question title', 'error');
+      utils.showNotification("Please enter a question title", "error");
       return;
     }
 
     const tags = utils.parseTags(tagsInput);
-    
+
     try {
-      const { error } = await supabase
-        .from('questions')
-        .insert({
-          title,
-          description,
-          tags,
-          user_id: this.currentUser.id
-        });
+      const { error } = await supabase.from("questions").insert({
+        title,
+        description,
+        tags,
+        user_id: this.currentUser.id, // 👈 logged in user id
+      });
 
       if (error) throw error;
 
-      // Close modal and reset form
       this.closeQuestionModal();
-      document.getElementById('questionForm').reset();
-      
-      utils.showNotification('Question posted successfully!', 'success');
-
-    } catch (error) {
-      utils.handleError(error, 'Failed to post question. Please try again.');
+      document.getElementById("questionForm").reset();
+      utils.showNotification("Question posted successfully!", "success");
+    } catch (err) {
+      utils.handleError(err, "Failed to post question. Please try again.");
     }
+  }
+
+  openQuestionModal() {
+    document.getElementById("questionModal").classList.remove("hidden");
   }
 
   closeQuestionModal() {
-    const modal = document.getElementById('questionModal');
-    modal.classList.add('hidden');
+    document.getElementById("questionModal").classList.add("hidden");
   }
 
-  handleNewQuestion(question) {
-    // Add to questions array
-    this.questions.unshift(question);
-    
-    // Check if it matches current filters
+  handleNewQuestion(q) {
+    this.questions.unshift(q);
     this.performSearch();
-    
-    // Show notification for new questions from others
-    if (question.user_id !== this.currentUser.id) {
-      utils.showNotification('New question posted!', 'success');
+    if (q.user_id !== this.currentUser.id) {
+      utils.showNotification("New question posted!", "success");
     }
   }
 
-  handleQuestionUpdate(updatedQuestion, oldQuestion) {
-    // Find and update the question in our array
-    const index = this.questions.findIndex(q => q.id === updatedQuestion.id);
+  handleQuestionUpdate(u, o) {
+    const index = this.questions.findIndex((q) => q.id === u.id);
     if (index !== -1) {
-      this.questions[index] = updatedQuestion;
-      this.performSearch(); // Re-apply filters and render
+      this.questions[index] = u;
+      this.performSearch();
     }
   }
 
-  handleQuestionDelete(deletedQuestion) {
-    // Remove from questions array
-    this.questions = this.questions.filter(q => q.id !== deletedQuestion.id);
-    this.performSearch(); // Re-apply filters and render
+  handleQuestionDelete(d) {
+    this.questions = this.questions.filter((q) => q.id !== d.id);
+    this.performSearch();
+  }
+
+  performSearch() {
+    const searchTerm = document.getElementById("searchInput").value.trim().toLowerCase();
+    this.filteredQuestions = this.questions.filter((q) =>
+      q.title.toLowerCase().includes(searchTerm) ||
+      q.description?.toLowerCase().includes(searchTerm)
+    );
+    this.renderQuestions();
   }
 }
 
-// Global functions for modal control
-window.closeQuestionModal = function() {
-  const modal = document.getElementById('questionModal');
-  modal.classList.add('hidden');
-};
-
-// Initialize home page when DOM is loaded
-document.addEventListener('DOMContentLoaded', () => {
-  new HomePage();
-});
+document.addEventListener("DOMContentLoaded", () => new HomePage());
