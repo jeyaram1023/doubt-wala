@@ -1,6 +1,9 @@
 import './style.css'
 import javascriptLogo from './javascript.svg'
-import viteLogo from '/vite.svg'
+//import viteLogo from '/vite.svg'
+// main.js
+import './style.css';
+import './home.js'; // Load and run your HomePage logic
 import { setupCounter } from './counter.js'
 
 document.querySelector('#app').innerHTML = `
