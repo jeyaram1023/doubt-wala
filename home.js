@@ -1,5 +1,9 @@
 // Home page functionality
 
+import { supabase, CONFIG } from './config.js';
+import { utils } from './utils.js';
+import { realtimeManager } from './realtime.js';
+
 class HomePage {
   constructor() {
     this.currentUser = null;
@@ -10,40 +14,20 @@ class HomePage {
   }
 
   async init() {
-    // Initialize UI components
     utils.initializeUI();
-
-    // Check authentication
     this.currentUser = await utils.checkAuth();
     if (!this.currentUser) return;
 
-    // Setup event listeners
     this.setupEventListeners();
-
-    // Load initial data
     await this.loadQuestions();
-
-    // Setup realtime subscriptions
     this.setupRealtime();
   }
 
   setupEventListeners() {
-    // Ask question button
-    const askQuestionBtn = document.getElementById('askQuestionBtn');
-    if (askQuestionBtn) {
-      askQuestionBtn.addEventListener('click', () => this.openQuestionModal());
-    }
-
-    // Question form
-    const questionForm = document.getElementById('questionForm');
-    if (questionForm) {
-      questionForm.addEventListener('submit', (e) => this.handleQuestionSubmit(e));
-    }
-
-    // Search functionality
-    const searchInput = document.getElementById('searchInput');
-    const searchBtn = document.getElementById('searchBtn');
+    document.getElementById('askQuestionBtn')?.addEventListener('click', () => this.openQuestionModal());
+    document.getElementById('questionForm')?.addEventListener('submit', (e) => this.handleQuestionSubmit(e));
     
+    const searchInput = document.getElementById('searchInput');
     if (searchInput) {
       searchInput.addEventListener('input', () => this.searchDebounced());
       searchInput.addEventListener('keypress', (e) => {
@@ -54,18 +38,10 @@ class HomePage {
       });
     }
 
-    if (searchBtn) {
-      searchBtn.addEventListener('click', () => this.performSearch());
-    }
+    document.getElementById('searchBtn')?.addEventListener('click', () => this.performSearch());
+    document.getElementById('sortFilter')?.addEventListener('change', () => this.applyFilters());
 
-    // Filter functionality
-    const sortFilter = document.getElementById('sortFilter');
     const tagFilter = document.getElementById('tagFilter');
-
-    if (sortFilter) {
-      sortFilter.addEventListener('change', () => this.applyFilters());
-    }
-
     if (tagFilter) {
       tagFilter.addEventListener('input', () => this.searchDebounced());
       tagFilter.addEventListener('keypress', (e) => {
@@ -78,20 +54,11 @@ class HomePage {
   }
 
   setupRealtime() {
-    // Subscribe to new questions
     realtimeManager.subscribeToQuestions({
-      onInsert: (question) => {
-        this.handleNewQuestion(question);
-      },
-      onUpdate: (updatedQuestion, oldQuestion) => {
-        this.handleQuestionUpdate(updatedQuestion, oldQuestion);
-      },
-      onDelete: (deletedQuestion) => {
-        this.handleQuestionDelete(deletedQuestion);
-      },
-      onConnected: () => {
-        console.log('Connected to questions realtime');
-      }
+      onInsert: (question) => this.handleNewQuestion(question),
+      onUpdate: (updatedQuestion) => this.handleQuestionUpdate(updatedQuestion),
+      onDelete: (deletedQuestion) => this.handleQuestionDelete(deletedQuestion),
+      onConnected: () => console.log('Connected to questions realtime'),
     });
   }
 
@@ -100,11 +67,14 @@ class HomePage {
     utils.showLoading(container, 'Loading questions...');
 
     try {
+      // ##### FIX APPLIED HERE #####
+      // Switched from 'user_profiles!questions_user_id_fkey(...)' to the more robust 'user_profiles(...)'
+      // This lets Supabase infer the relationship without relying on a specific foreign key constraint name.
       const { data, error } = await supabase
         .from('questions')
         .select(`
           *,
-          user_profiles!questions_user_id_fkey (
+          user_profiles (
             display_name,
             email
           )
@@ -125,7 +95,7 @@ class HomePage {
         'There was an error loading the questions. Please try again.',
         {
           text: 'Retry',
-          action: 'window.location.reload()'
+          action: () => window.location.reload()
         }
       );
     }
@@ -133,17 +103,18 @@ class HomePage {
 
   renderQuestions() {
     const container = document.getElementById('questionsContainer');
-    
+    if (!container) return;
+
     if (!this.filteredQuestions.length) {
       utils.showEmptyState(
         container,
         'No Questions Found',
         this.hasActiveFilters() 
-          ? 'Try adjusting your search or filters to find more questions.'
-          : 'Be the first to ask a question and start the discussion!',
+          ? 'Try adjusting your search or filters.' 
+          : 'Be the first to ask a question!',
         !this.hasActiveFilters() ? {
           text: 'Ask Question',
-          action: 'document.querySelector(\'#askQuestionBtn\').click()'
+          action: () => document.getElementById('askQuestionBtn')?.click()
         } : null
       );
       return;
@@ -164,25 +135,13 @@ class HomePage {
       <div class="question-card" onclick="window.location.href='question.html?id=${question.id}'">
         <div class="question-header">
           <h3 class="question-title">${utils.escapeHtml(question.title)}</h3>
-          ${question.description ? `
-            <p class="question-description">${utils.escapeHtml(question.description)}</p>
-          ` : ''}
+          ${question.description ? `<p class="question-description">${utils.escapeHtml(question.description)}</p>` : ''}
         </div>
-        
-        ${tags.length > 0 ? `
-          <div class="question-tags">
-            ${tags.map(tag => `<span class="tag">${utils.escapeHtml(tag)}</span>`).join('')}
-          </div>
-        ` : ''}
-        
+        ${tags.length > 0 ? `<div class="question-tags">${tags.map(tag => `<span class="tag">${utils.escapeHtml(tag)}</span>`).join('')}</div>` : ''}
         <div class="question-footer">
           <div class="question-meta">
-            <div class="meta-item">
-              <span>👤 ${utils.escapeHtml(displayName)}</span>
-            </div>
-            <div class="meta-item">
-              <span>💬 0 answers</span>
-            </div>
+            <span class="meta-item">👤 ${utils.escapeHtml(displayName)}</span>
+            <span class="meta-item">💬 0 answers</span>
           </div>
           <div class="question-time">${timeAgo}</div>
         </div>
@@ -196,17 +155,13 @@ class HomePage {
     const tagFilters = tagFilter ? utils.parseTags(tagFilter) : [];
 
     this.filteredQuestions = this.questions.filter(question => {
-      // Text search
       const matchesSearch = !searchTerm || 
         question.title.toLowerCase().includes(searchTerm) ||
         question.description?.toLowerCase().includes(searchTerm);
 
-      // Tag filter
       const matchesTags = tagFilters.length === 0 ||
         tagFilters.some(filterTag => 
-          question.tags?.some(questionTag => 
-            questionTag.toLowerCase().includes(filterTag)
-          )
+          question.tags?.some(questionTag => questionTag.toLowerCase().includes(filterTag))
         );
 
       return matchesSearch && matchesTags;
@@ -217,116 +172,80 @@ class HomePage {
 
   applyFilters() {
     const sortFilter = document.getElementById('sortFilter').value;
-
-    // Sort filtered questions
     this.filteredQuestions.sort((a, b) => {
-      switch (sortFilter) {
-        case 'oldest':
-          return new Date(a.created_at) - new Date(b.created_at);
-        case 'newest':
-        default:
-          return new Date(b.created_at) - new Date(a.created_at);
-      }
+      const dateA = new Date(a.created_at).getTime();
+      const dateB = new Date(b.created_at).getTime();
+      return sortFilter === 'oldest' ? dateA - dateB : dateB - dateA;
     });
-
     this.renderQuestions();
   }
 
   hasActiveFilters() {
-    const searchTerm = document.getElementById('searchInput').value.trim();
-    const tagFilter = document.getElementById('tagFilter').value.trim();
-    return searchTerm || tagFilter;
+    return document.getElementById('searchInput').value.trim() || document.getElementById('tagFilter').value.trim();
   }
 
   openQuestionModal() {
-    const modal = document.getElementById('questionModal');
-    modal.classList.remove('hidden');
-    
-    // Focus on title input
-    const titleInput = document.getElementById('questionTitle');
-    if (titleInput) {
-      setTimeout(() => titleInput.focus(), 100);
-    }
+    document.getElementById('questionModal')?.classList.remove('hidden');
+    setTimeout(() => document.getElementById('questionTitle')?.focus(), 100);
+  }
+
+  closeQuestionModal() {
+    document.getElementById('questionModal')?.classList.add('hidden');
+    document.getElementById('questionForm')?.reset();
   }
 
   async handleQuestionSubmit(e) {
     e.preventDefault();
-    
     const title = document.getElementById('questionTitle').value.trim();
-    const description = document.getElementById('questionDescription').value.trim();
-    const tagsInput = document.getElementById('questionTags').value.trim();
-    
     if (!title) {
-      utils.showNotification('Please enter a question title', 'error');
+      utils.showNotification('Title is required.', 'error');
       return;
     }
-
+    const description = document.getElementById('questionDescription').value.trim();
+    const tagsInput = document.getElementById('questionTags').value.trim();
     const tags = utils.parseTags(tagsInput);
-    
+
     try {
-      const { error } = await supabase
-        .from('questions')
-        .insert({
-          title,
-          description,
-          tags,
-          user_id: this.currentUser.id
-        });
-
+      const { error } = await supabase.from('questions').insert({
+        title,
+        description,
+        tags,
+        user_id: this.currentUser.id
+      });
       if (error) throw error;
-
-      // Close modal and reset form
       this.closeQuestionModal();
-      document.getElementById('questionForm').reset();
-      
       utils.showNotification('Question posted successfully!', 'success');
-
     } catch (error) {
-      utils.handleError(error, 'Failed to post question. Please try again.');
+      utils.handleError(error, 'Failed to post question.');
     }
-  }
-
-  closeQuestionModal() {
-    const modal = document.getElementById('questionModal');
-    modal.classList.add('hidden');
   }
 
   handleNewQuestion(question) {
-    // Add to questions array
     this.questions.unshift(question);
-    
-    // Check if it matches current filters
     this.performSearch();
-    
-    // Show notification for new questions from others
     if (question.user_id !== this.currentUser.id) {
-      utils.showNotification('New question posted!', 'success');
+      utils.showNotification('A new question was posted!', 'info');
     }
   }
 
-  handleQuestionUpdate(updatedQuestion, oldQuestion) {
-    // Find and update the question in our array
+  handleQuestionUpdate(updatedQuestion) {
     const index = this.questions.findIndex(q => q.id === updatedQuestion.id);
     if (index !== -1) {
-      this.questions[index] = updatedQuestion;
-      this.performSearch(); // Re-apply filters and render
+      this.questions[index] = { ...this.questions[index], ...updatedQuestion };
+      this.performSearch();
     }
   }
 
   handleQuestionDelete(deletedQuestion) {
-    // Remove from questions array
     this.questions = this.questions.filter(q => q.id !== deletedQuestion.id);
-    this.performSearch(); // Re-apply filters and render
+    this.performSearch();
   }
 }
 
-// Global functions for modal control
 window.closeQuestionModal = function() {
-  const modal = document.getElementById('questionModal');
-  modal.classList.add('hidden');
+  document.getElementById('questionModal')?.classList.add('hidden');
 };
 
-// Initialize home page when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
   new HomePage();
 });
