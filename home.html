@@ -1,223 +1,13 @@
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Doubt Portal - Home</title>
-    <!-- Assuming styles.css contains your app's styling -->
-    <style>
-        :root {
-            --primary-color: #4f46e5;
-            --secondary-color: #6b7280;
-            --background-color: #f3f4f6;
-            --surface-color: #ffffff;
-            --text-color: #111827;
-            --border-color: #e5e7eb;
-            --success-color: #10b981;
-            --error-color: #ef4444;
-        }
-        body {
-            font-family: 'Inter', sans-serif;
-            margin: 0;
-            background-color: var(--background-color);
-            color: var(--text-color);
-        }
-        .navbar {
-            background-color: var(--surface-color);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            padding: 1rem 2rem;
-        }
-        .nav-container {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        .nav-brand h2 {
-            margin: 0;
-            color: var(--primary-color);
-        }
-        .nav-menu a, .nav-menu button {
-            margin-left: 1rem;
-            text-decoration: none;
-            color: var(--secondary-color);
-            font-weight: 500;
-        }
-        .nav-menu a.active {
-            color: var(--primary-color);
-        }
-        .btn {
-            padding: 0.5rem 1rem;
-            border: none;
-            border-radius: 0.375rem;
-            cursor: pointer;
-            font-weight: 600;
-            transition: background-color 0.2s;
-        }
-        .btn-primary {
-            background-color: var(--primary-color);
-            color: white;
-        }
-        .btn-primary:hover {
-            background-color: #4338ca;
-        }
-        .btn-secondary {
-            background-color: var(--secondary-color);
-            color: white;
-        }
-        .main-container {
-            max-width: 1200px;
-            margin: 2rem auto;
-            padding: 0 2rem;
-        }
-        .header-section {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 2rem;
-        }
-        .questions-grid {
-            display: grid;
-            gap: 1.5rem;
-        }
-        .question-card {
-            background-color: var(--surface-color);
-            border-radius: 0.5rem;
-            padding: 1.5rem;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            cursor: pointer;
-            transition: box-shadow 0.2s;
-        }
-        .question-card:hover {
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
-        .question-title {
-            margin: 0 0 0.5rem 0;
-        }
-        .question-description {
-            color: var(--secondary-color);
-            margin-bottom: 1rem;
-        }
-        .question-tags .tag {
-            display: inline-block;
-            background-color: var(--background-color);
-            color: var(--primary-color);
-            padding: 0.25rem 0.75rem;
-            border-radius: 9999px;
-            font-size: 0.875rem;
-            margin-right: 0.5rem;
-        }
-        .question-footer {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            color: var(--secondary-color);
-            font-size: 0.875rem;
-            margin-top: 1rem;
-        }
-        .question-meta {
-            display: flex;
-            gap: 1rem;
-        }
-        .modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-        .modal.hidden {
-            display: none;
-        }
-        .modal-content {
-            background-color: white;
-            padding: 2rem;
-            border-radius: 0.5rem;
-            width: 90%;
-            max-width: 500px;
-        }
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.5rem;
-        }
-        .modal-close {
-            background: none;
-            border: none;
-            font-size: 1.5rem;
-            cursor: pointer;
-        }
-        .input-group {
-            margin-bottom: 1rem;
-        }
-        .input-group label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 500;
-        }
-        .input-group input, .input-group textarea {
-            width: 100%;
-            padding: 0.75rem;
-            border: 1px solid var(--border-color);
-            border-radius: 0.375rem;
-        }
-        .modal-actions {
-            display: flex;
-            justify-content: flex-end;
-            gap: 1rem;
-            margin-top: 1.5rem;
-        }
-        .loading-state, .empty-state {
-            text-align: center;
-            padding: 4rem 2rem;
-            background-color: var(--surface-color);
-            border-radius: 0.5rem;
-        }
-        .spinner {
-            border: 4px solid rgba(0, 0, 0, 0.1);
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            border-left-color: var(--primary-color);
-            animation: spin 1s ease infinite;
-            margin: 0 auto 1rem;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        .notification {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background-color: var(--text-color);
-            color: white;
-            padding: 1rem 1.5rem;
-            border-radius: 0.5rem;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-            z-index: 2000;
-            opacity: 0;
-            transition: opacity 0.3s, transform 0.3s;
-        }
-        .notification.show {
-            opacity: 1;
-            transform: translate(-50%, -10px);
-        }
-        .notification.error {
-            background-color: var(--error-color);
-        }
-        .notification.success {
-            background-color: var(--success-color);
-        }
-    </style>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="home.css">
 </head>
 <body>
     <nav class="navbar">
@@ -227,7 +17,7 @@
             </div>
             <div class="nav-menu">
                 <a href="home.html" class="nav-link active">Home</a>
-                <a href="#" class="nav-link">Profile</a>
+                <a href="profile.html" class="nav-link">Profile</a>
                 <button id="logoutBtn" class="btn btn-secondary">Logout</button>
             </div>
         </div>
@@ -243,6 +33,21 @@
                 <button id="askQuestionBtn" class="btn btn-primary">
                     <span>+ Ask Question</span>
                 </button>
+            </div>
+
+            <div class="search-filter-section">
+                <div class="search-bar">
+                    <input type="text" id="searchInput" placeholder="Search questions by title, description, or tags...">
+                    <button id="searchBtn" class="btn btn-outline">Search</button>
+                </div>
+                
+                <div class="filter-options">
+                    <select id="sortFilter">
+                        <option value="newest">Newest First</option>
+                        <option value="oldest">Oldest First</option>
+                    </select>
+                    <input type="text" id="tagFilter" placeholder="Filter by tags (comma-separated)">
+                </div>
             </div>
 
             <div class="questions-section">
@@ -261,7 +66,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h3>Ask a Question</h3>
-                <button class="modal-close" onclick="closeQuestionModal()">&times;</button>
+                <button class="modal-close" aria-label="Close modal">&times;</button>
             </div>
             <form id="questionForm">
                 <div class="input-group">
@@ -277,6 +82,7 @@
                 <div class="input-group">
                     <label for="questionTags">Tags</label>
                     <input type="text" id="questionTags" placeholder="javascript, react, css (comma-separated)">
+                    <small>Add relevant tags to help others find your question</small>
                 </div>
                 
                 <div class="modal-actions">
@@ -287,37 +93,17 @@
         </div>
     </div>
 
-    <div id="notification" class="notification"></div>
+    <div id="notification" class="notification hidden">
+        <div class="notification-content">
+            <span id="notificationText"></span>
+            <button class="notification-close">&times;</button>
+        </div>
+    </div>
 
-    <!-- You'll need to replace these with your actual Supabase URL and anon key -->
-    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-    <script>
-        // Mock Supabase client for demonstration if config is not available
-        // In your real app, you would have a config.js file with your actual Supabase credentials
-        const SUPABASE_URL = 'https://cubnpddinqtubsptdipi.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN1Ym5wZGRpbnF0dWJzcHRkaXBpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU4NDA2MDMsImV4cCI6MjA3MTQxNjYwM30.Gy4XS-Br-DO8nl4Wq_qHhp2A9gd38raRvTokuqdfKqo';
-
-        const supabase = (typeof supabase !== 'undefined') 
-            ? supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
-            : { from: () => ({ select: () => ({ data: [], error: { message: "Supabase not configured" } }) }) };
-
-        // Mock utils and other dependencies for a self-contained example
-        const utils = {
-            checkAuth: async () => ({ id: '12345', email: 'test@example.com' }), // Mock user
-            handleError: (error, message) => {
-                console.error(message, error);
-                document.getElementById('notification').textContent = `${message}: ${error.message}`;
-                document.getElementById('notification').classList.add('show', 'error');
-                setTimeout(() => document.getElementById('notification').classList.remove('show', 'error'), 3000);
-            },
-            showEmptyState: (container, title, message) => {
-                container.innerHTML = `<div class="empty-state"><h3>${title}</h3><p>${message}</p></div>`;
-            },
-            escapeHtml: (str) => str, // Simple mock
-            formatTags: (tags) => tags || [],
-            formatRelativeTime: (date) => new Date(date).toLocaleDateString(),
-        };
-    </script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2.39.3/dist/umd/supabase.js"></script>
+    <script src="config.js"></script>
+    <script src="utils.js"></script>
+    <script src="realtime.js"></script>
     <script src="home.js"></script>
 </body>
 </html>
