@@ -76,7 +76,7 @@ class AuthManager {
         email: email,
         options: {
           // Corrected for GitHub Pages deployment
-          emailRedirectTo: "https://jeyaram1023.github.io/doubt-wala/home.html"
+          emailRedirectTo: "https://jeyaram1023.github.io/doubt-wala/index.html"
         }
       });
 
