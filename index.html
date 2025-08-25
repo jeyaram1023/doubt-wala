@@ -1,47 +1,45 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Doubt Portal - Sign In</title>
-    <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="auth.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Doubt Portal - Sign In</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="auth.css">
 </head>
 <body>
-    <div class="auth-container">
-        <div class="auth-card">
-            <div class="auth-header">
-                <h1>🎓 Doubt Portal</h1>
-                <p>Join the community of learners</p>
-            </div>
-            
-            <form id="authForm" class="auth-form">
-                <div class="input-group">
-                    <label for="email">Email Address</label>
-                    <input type="email" id="email" required placeholder="Enter your email">
-                </div>
-                
-                <button type="submit" id="authButton" class="btn btn-primary">
-                    <span>Send Magic Link</span>
-                </button>
-            </form>
-            
-            <div id="message" class="message hidden"></div>
-            
-            <div class="auth-footer">
-                <p>We'll send you a secure link to sign in - no password needed!</p>
-            </div>
-        </div>
-    </div>
-    
-    <script src="https://unpkg.com/@supabase/supabase-js@2.39.3/dist/umd/supabase.js"></script>
-    
-<script src="config.js"></script>
-<script src="utils.js"></script> <!-- 👈 add this line -->
-<script src="auth.js"></script>
+  <div class="auth-container">
+    <div class="auth-card">
+      <div class="auth-header">
+        <h1>🎓 Doubt Portal</h1>
+        <p>Join the community of learners</p>
+      </div>
 
-    
-    <script src="config.js"></script>
-    <script src="auth.js"></script>
+      <form id="authForm" class="auth-form">
+        <div class="input-group">
+          <label for="email">Email Address</label>
+          <input type="email" id="email" required placeholder="Enter your email">
+        </div>
+
+        <button type="submit" id="authButton" class="btn btn-primary">
+          <span>Send Magic Link</span>
+        </button>
+      </form>
+
+      <div id="message" class="message hidden"></div>
+
+      <div class="auth-footer">
+        <p>We'll send you a secure link to sign in - no password needed!</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Supabase client -->
+  <script src="https://unpkg.com/@supabase/supabase-js@2.39.3/dist/umd/supabase.js"></script>
+
+  <!-- Your scripts (in correct order) -->
+  <script src="config.js"></script>
+  <script src="utils.js"></script>
+  <script src="auth.js"></script>
 </body>
 </html>
