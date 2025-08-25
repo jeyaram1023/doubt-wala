@@ -1,3 +1,4 @@
+
 // Home page functionality
 
 class HomePage {
@@ -5,23 +6,26 @@ class HomePage {
     this.currentUser = null;
     this.questions = [];
     this.filteredQuestions = [];
+    this.searchDebounced = utils.debounce(this.performSearch.bind(this), CONFIG.DEBOUNCE_DELAY);
     this.init();
   }
 
   async init() {
+    // Initialize UI components
+    utils.initializeUI();
+
     // Check authentication
     this.currentUser = await utils.checkAuth();
-    if (!this.currentUser) {
-        // Redirect to login or show an error if auth fails
-        document.body.innerHTML = '<h1>Please log in to view this page.</h1>';
-        return;
-    }
+    if (!this.currentUser) return;
 
     // Setup event listeners
     this.setupEventListeners();
 
     // Load initial data
     await this.loadQuestions();
+
+    // Setup realtime subscriptions
+    this.setupRealtime();
   }
 
   setupEventListeners() {
@@ -36,59 +40,81 @@ class HomePage {
     if (questionForm) {
       questionForm.addEventListener('submit', (e) => this.handleQuestionSubmit(e));
     }
+
+    // Search functionality
+    const searchInput = document.getElementById('searchInput');
+    const searchBtn = document.getElementById('searchBtn');
+    
+    if (searchInput) {
+      searchInput.addEventListener('input', () => this.searchDebounced());
+      searchInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          this.performSearch();
+        }
+      });
+    }
+
+    if (searchBtn) {
+      searchBtn.addEventListener('click', () => this.performSearch());
+    }
+
+    // Filter functionality
+    const sortFilter = document.getElementById('sortFilter');
+    const tagFilter = document.getElementById('tagFilter');
+
+    if (sortFilter) {
+      sortFilter.addEventListener('change', () => this.applyFilters());
+    }
+
+    if (tagFilter) {
+      tagFilter.addEventListener('input', () => this.searchDebounced());
+      tagFilter.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          this.applyFilters();
+        }
+      });
+    }
+  }
+
+  setupRealtime() {
+    // Subscribe to new questions
+    realtimeManager.subscribeToQuestions({
+      onInsert: (question) => {
+        this.handleNewQuestion(question);
+      },
+      onUpdate: (updatedQuestion, oldQuestion) => {
+        this.handleQuestionUpdate(updatedQuestion, oldQuestion);
+      },
+      onDelete: (deletedQuestion) => {
+        this.handleQuestionDelete(deletedQuestion);
+      },
+      onConnected: () => {
+        console.log('Connected to questions realtime');
+      }
+    });
   }
 
   async loadQuestions() {
     const container = document.getElementById('questionsContainer');
-    container.innerHTML = `<div class="loading-state"><div class="spinner"></div><p>Loading questions...</p></div>`;
+    utils.showLoading(container, 'Loading questions...');
 
     try {
-      // --- THIS IS THE FIX ---
-      // The query now correctly joins user_profiles by referencing the 'user_id' column
-      // from the 'questions' table. Supabase understands that 'user_id' should be used
-      // to link to the primary key of the 'user_profiles' table.
       const { data, error } = await supabase
         .from('questions')
         .select(`
           *,
-          user_profiles!inner (
-            id,
+          user_profiles!questions_user_id_fkey (
             display_name,
             email
           )
         `)
         .order('created_at', { ascending: false });
 
-      if (error) {
-        // If the query fails, it will throw an error which is caught below.
-        throw error;
-      }
-      
-      // The join syntax was changed from user_profiles!questions_user_id_fkey to user_profiles!inner
-      // and we need to filter where questions.user_id equals user_profiles.id
-      // A better approach is to create a view in Supabase, but for now we can filter client-side or adjust the query.
-      // Let's assume the RPC or a view is a better approach, but for a quick fix, let's adjust the query if possible.
-      // The `!inner` join is a good start. Let's refine the query.
-      
-      const { data: questionsData, error: questionsError } = await supabase
-        .from('questions')
-        .select(`
-            id,
-            title,
-            description,
-            tags,
-            created_at,
-            user_id,
-            profiles:user_profiles (
-                display_name,
-                email
-            )
-        `)
-        .order('created_at', { ascending: false });
+      if (error) throw error;
 
-      if (questionsError) throw questionsError;
-
-      this.questions = questionsData.map(q => ({...q, user_profiles: q.profiles}) ) || [];
+      this.questions = data || [];
       this.filteredQuestions = [...this.questions];
       this.renderQuestions();
 
@@ -97,7 +123,11 @@ class HomePage {
       utils.showEmptyState(
         container,
         'Failed to Load Questions',
-        'There was an error loading the questions. Please try again.'
+        'There was an error loading the questions. Please try again.',
+        {
+          text: 'Retry',
+          action: 'window.location.reload()'
+        }
       );
     }
   }
@@ -109,7 +139,13 @@ class HomePage {
       utils.showEmptyState(
         container,
         'No Questions Found',
-        'Be the first to ask a question and start the discussion!'
+        this.hasActiveFilters() 
+          ? 'Try adjusting your search or filters to find more questions.'
+          : 'Be the first to ask a question and start the discussion!',
+        !this.hasActiveFilters() ? {
+          text: 'Ask Question',
+          action: 'document.querySelector(\'#askQuestionBtn\').click()'
+        } : null
       );
       return;
     }
@@ -120,14 +156,13 @@ class HomePage {
   }
 
   renderQuestionCard(question) {
-    // The joined data will be nested under the 'user_profiles' key.
     const author = question.user_profiles || {};
     const displayName = author.display_name || author.email?.split('@')[0] || 'Anonymous';
     const tags = utils.formatTags(question.tags);
     const timeAgo = utils.formatRelativeTime(question.created_at);
 
     return `
-      <div class="question-card">
+      <div class="question-card" onclick="window.location.href='question.html?id=${question.id}'">
         <div class="question-header">
           <h3 class="question-title">${utils.escapeHtml(question.title)}</h3>
           ${question.description ? `
@@ -143,7 +178,12 @@ class HomePage {
         
         <div class="question-footer">
           <div class="question-meta">
-            <span>👤 ${utils.escapeHtml(displayName)}</span>
+            <div class="meta-item">
+              <span>👤 ${utils.escapeHtml(displayName)}</span>
+            </div>
+            <div class="meta-item">
+              <span>💬 0 answers</span>
+            </div>
           </div>
           <div class="question-time">${timeAgo}</div>
         </div>
@@ -151,15 +191,63 @@ class HomePage {
     `;
   }
 
+  performSearch() {
+    const searchTerm = document.getElementById('searchInput').value.trim().toLowerCase();
+    const tagFilter = document.getElementById('tagFilter').value.trim().toLowerCase();
+    const tagFilters = tagFilter ? utils.parseTags(tagFilter) : [];
+
+    this.filteredQuestions = this.questions.filter(question => {
+      // Text search
+      const matchesSearch = !searchTerm || 
+        question.title.toLowerCase().includes(searchTerm) ||
+        question.description?.toLowerCase().includes(searchTerm);
+
+      // Tag filter
+      const matchesTags = tagFilters.length === 0 ||
+        tagFilters.some(filterTag => 
+          question.tags?.some(questionTag => 
+            questionTag.toLowerCase().includes(filterTag)
+          )
+        );
+
+      return matchesSearch && matchesTags;
+    });
+
+    this.applyFilters();
+  }
+
+  applyFilters() {
+    const sortFilter = document.getElementById('sortFilter').value;
+
+    // Sort filtered questions
+    this.filteredQuestions.sort((a, b) => {
+      switch (sortFilter) {
+        case 'oldest':
+          return new Date(a.created_at) - new Date(b.created_at);
+        case 'newest':
+        default:
+          return new Date(b.created_at) - new Date(a.created_at);
+      }
+    });
+
+    this.renderQuestions();
+  }
+
+  hasActiveFilters() {
+    const searchTerm = document.getElementById('searchInput').value.trim();
+    const tagFilter = document.getElementById('tagFilter').value.trim();
+    return searchTerm || tagFilter;
+  }
+
   openQuestionModal() {
     const modal = document.getElementById('questionModal');
     modal.classList.remove('hidden');
-    document.getElementById('questionTitle').focus();
-  }
-
-  closeQuestionModal() {
-    const modal = document.getElementById('questionModal');
-    modal.classList.add('hidden');
+    
+    // Focus on title input
+    const titleInput = document.getElementById('questionTitle');
+    if (titleInput) {
+      setTimeout(() => titleInput.focus(), 100);
+    }
   }
 
   async handleQuestionSubmit(e) {
@@ -170,11 +258,11 @@ class HomePage {
     const tagsInput = document.getElementById('questionTags').value.trim();
     
     if (!title) {
-      alert('Please enter a question title');
+      utils.showNotification('Please enter a question title', 'error');
       return;
     }
 
-    const tags = tagsInput.split(',').map(tag => tag.trim()).filter(tag => tag);
+    const tags = utils.parseTags(tagsInput);
     
     try {
       const { error } = await supabase
@@ -188,17 +276,52 @@ class HomePage {
 
       if (error) throw error;
 
+      // Close modal and reset form
       this.closeQuestionModal();
       document.getElementById('questionForm').reset();
-      this.loadQuestions(); // Refresh questions list
+      
+      utils.showNotification('Question posted successfully!', 'success');
 
     } catch (error) {
       utils.handleError(error, 'Failed to post question. Please try again.');
     }
   }
+
+  closeQuestionModal() {
+    const modal = document.getElementById('questionModal');
+    modal.classList.add('hidden');
+  }
+
+  handleNewQuestion(question) {
+    // Add to questions array
+    this.questions.unshift(question);
+    
+    // Check if it matches current filters
+    this.performSearch();
+    
+    // Show notification for new questions from others
+    if (question.user_id !== this.currentUser.id) {
+      utils.showNotification('New question posted!', 'success');
+    }
+  }
+
+  handleQuestionUpdate(updatedQuestion, oldQuestion) {
+    // Find and update the question in our array
+    const index = this.questions.findIndex(q => q.id === updatedQuestion.id);
+    if (index !== -1) {
+      this.questions[index] = updatedQuestion;
+      this.performSearch(); // Re-apply filters and render
+    }
+  }
+
+  handleQuestionDelete(deletedQuestion) {
+    // Remove from questions array
+    this.questions = this.questions.filter(q => q.id !== deletedQuestion.id);
+    this.performSearch(); // Re-apply filters and render
+  }
 }
 
-// Global function for modal control
+// Global functions for modal control
 window.closeQuestionModal = function() {
   const modal = document.getElementById('questionModal');
   modal.classList.add('hidden');
