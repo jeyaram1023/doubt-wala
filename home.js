@@ -1,7 +1,7 @@
-// home.js
-import { supabase } from './supabaseClient.js';
+
 
 // Home page functionality
+
 class HomePage {
   constructor() {
     this.currentUser = null;
@@ -102,10 +102,15 @@ class HomePage {
     utils.showLoading(container, 'Loading questions...');
 
     try {
-      // ✅ Simplified query so it won’t break if relationships aren’t set up
       const { data, error } = await supabase
         .from('questions')
-        .select('*')
+        .select(`
+          *,
+          user_profiles!questions_user_id_fkey (
+            display_name,
+            email
+          )
+        `)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -152,7 +157,8 @@ class HomePage {
   }
 
   renderQuestionCard(question) {
-    const displayName = question.display_name || 'Anonymous';
+    const author = question.user_profiles || {};
+    const displayName = author.display_name || author.email?.split('@')[0] || 'Anonymous';
     const tags = utils.formatTags(question.tags);
     const timeAgo = utils.formatRelativeTime(question.created_at);
 
@@ -167,7 +173,7 @@ class HomePage {
         
         ${tags.length > 0 ? `
           <div class="question-tags">
-            ${tags.map(tag => <span class="tag">${utils.escapeHtml(tag)}</span>).join('')}
+            ${tags.map(tag => `<span class="tag">${utils.escapeHtml(tag)}</span>`).join('')}
           </div>
         ` : ''}
         
